@@ -110,9 +110,7 @@ body {
 }
 
 .font-item:hover {
-    color: #FF9CD8;
-    transform: scale(1.05);
-    transition: all 0.2s ease;
+    color: #FF9CD8 !important;
 }
 
 .font-item.highlighted {
