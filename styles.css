@@ -97,7 +97,7 @@ body {
 .font-item {
     display: inline-block;
     margin: 0 50px;
-    font-size: 80px;
+    font-size: 96px;
     font-weight: 600;
     color: #FFFFFF;
     cursor: pointer;
@@ -118,9 +118,7 @@ body {
 .font-item.highlighted {
     background: transparent;
     color: #FF9CD8 !important;
-    text-shadow: 0 0 15px #FF9CD8 !important;
-    transform: scale(1.05) !important;
-    transition: all 0.2s ease !important;
+    text-shadow: none !important;
 }
 
 
