@@ -104,7 +104,7 @@ body {
     transition: color 0.3s ease, text-shadow 0.3s ease;
     text-shadow: none;
     user-select: none;
-    animation: flowRight 240s linear infinite;
+    /* Default animation - will be overridden by specific rows */
     white-space: nowrap;
     vertical-align: baseline;
 }
@@ -131,7 +131,25 @@ body {
 
 
 
-@keyframes flowRight {
+@keyframes flowRight1 {
+    0% {
+        transform: translateX(-400vw);
+    }
+    100% {
+        transform: translateX(400vw);
+    }
+}
+
+@keyframes flowRight2 {
+    0% {
+        transform: translateX(400vw);
+    }
+    100% {
+        transform: translateX(-400vw);
+    }
+}
+
+@keyframes flowRight3 {
     0% {
         transform: translateX(-400vw);
     }
@@ -141,6 +159,19 @@ body {
 }
 
 
+
+/* Individual row animations */
+#row1 .font-item {
+    animation: flowRight1 200s linear infinite;
+}
+
+#row2 .font-item {
+    animation: flowRight2 180s linear infinite;
+}
+
+#row3 .font-item {
+    animation: flowRight3 220s linear infinite;
+}
 
 .font-row.paused .font-item {
     animation-play-state: paused;
