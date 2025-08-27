@@ -295,17 +295,18 @@ class FontFlowDemo {
         return fontItem ? fontItem.dataset.font : null;
     }
     
-    highlightFont(fontName) {
+        highlightFont(fontName) {
         // Remove previous highlight
         document.querySelectorAll('.font-item.highlighted').forEach(item => {
             item.classList.remove('highlighted');
         });
         
-        // Add highlight to current font
-        document.querySelectorAll(`[data-font="${fontName}"]`).forEach(item => {
-            item.classList.add('highlighted');
-        });
-        
+        // Add highlight to only the first occurrence of the font
+        const firstFontElement = document.querySelector(`[data-font="${fontName}"]`);
+        if (firstFontElement) {
+            firstFontElement.classList.add('highlighted');
+        }
+
         this.highlightedFont = fontName;
     }
     
@@ -317,10 +318,11 @@ class FontFlowDemo {
             item.classList.remove('highlighted', 'selected');
         });
         
-        // Add selection effect
-        document.querySelectorAll(`[data-font="${fontName}"]`).forEach(item => {
-            item.classList.add('selected');
-        });
+        // Add selection effect to only the first occurrence of the font
+        const firstFontElement = document.querySelector(`[data-font="${fontName}"]`);
+        if (firstFontElement) {
+            firstFontElement.classList.add('selected');
+        }
         
         // Apply font to sample text
         const sampleText = document.getElementById('sampleText');
