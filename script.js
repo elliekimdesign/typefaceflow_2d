@@ -231,12 +231,12 @@ class FontFlowDemo {
         }
         
         // Font selection by hovering red dot (hand position)
-        if (this.isAnimationPaused) {
-            const fontAtPosition = this.getFontAtPosition(screenX, screenY);
-            if (fontAtPosition) {
-                this.highlightFont(fontAtPosition);
-                
-                // Auto-select after hovering for 1 second
+        const fontAtPosition = this.getFontAtPosition(screenX, screenY);
+        if (fontAtPosition) {
+            this.highlightFont(fontAtPosition);
+            
+            // Auto-select only when animation is paused
+            if (this.isAnimationPaused) {
                 if (this.highlightedFont === fontAtPosition) {
                     if (!this.hoverStartTime) {
                         this.hoverStartTime = Date.now();
@@ -256,17 +256,19 @@ class FontFlowDemo {
                     this.hoverStartTime = null;
                 }
             } else {
+                // Just show hover feedback when animation is running
+                this.updateStatus(`Hovering over ${fontAtPosition}`, 'tracking');
                 this.hoverStartTime = null;
-                // Clear highlight if not hovering over any font
-                if (this.highlightedFont) {
-                    document.querySelectorAll('.font-item.highlighted').forEach(item => {
-                        item.classList.remove('highlighted');
-                    });
-                    this.highlightedFont = null;
-                }
             }
         } else {
             this.hoverStartTime = null;
+            // Clear highlight if not hovering over any font
+            if (this.highlightedFont) {
+                document.querySelectorAll('.font-item.highlighted').forEach(item => {
+                    item.classList.remove('highlighted');
+                });
+                this.highlightedFont = null;
+            }
         }
     }
     

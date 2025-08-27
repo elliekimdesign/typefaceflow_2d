@@ -110,13 +110,17 @@ body {
 }
 
 .font-item:hover {
-    color: #FF9CD8 !important;
+    color: #FF9CD8;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
 .font-item.highlighted {
     background: transparent;
     color: #FF9CD8 !important;
-    text-shadow: none !important;
+    text-shadow: 0 0 15px #FF9CD8 !important;
+    transform: scale(1.05) !important;
+    transition: all 0.2s ease !important;
 }
 
 
@@ -131,16 +135,14 @@ body {
 
 @keyframes flowRight {
     0% {
-        transform: translateX(-300vw);
+        transform: translateX(-400vw);
     }
     100% {
-        transform: translateX(300vw);
+        transform: translateX(400vw);
     }
 }
 
 
-
-/* All rows use the same animation for now */
 
 .font-row.paused .font-item {
     animation-play-state: paused;
