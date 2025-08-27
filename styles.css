@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background: #2356F6;
+    background: #275BFD;
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -82,7 +82,7 @@ body {
     flex-direction: column;
     justify-content: space-evenly;
     padding: 15px 0;
-    background: #2356F6;
+    background: #275BFD;
 }
 
 .font-row {
@@ -149,7 +149,7 @@ body {
 /* Text Preview Area */
 .text-preview-container {
     flex: 1;
-    background: #2356F6;
+    background: #275BFD;
     padding: 30px;
     display: flex;
     flex-direction: column;
@@ -173,9 +173,9 @@ body {
     line-height: 1.4;
     margin-bottom: 30px;
     padding: 40px 60px;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.15);
     border: none;
-    border-radius: 0;
+    border-radius: 8px;
     transition: font-family 0.3s ease;
     height: 150px;
     width: 80%;
