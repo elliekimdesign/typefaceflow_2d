@@ -133,28 +133,28 @@ body {
 
 @keyframes flowRight1 {
     0% {
-        transform: translateX(-400vw);
+        transform: translateX(-200vw);
     }
     100% {
-        transform: translateX(400vw);
+        transform: translateX(200vw);
     }
 }
 
 @keyframes flowRight2 {
     0% {
-        transform: translateX(400vw);
+        transform: translateX(200vw);
     }
     100% {
-        transform: translateX(-400vw);
+        transform: translateX(-200vw);
     }
 }
 
 @keyframes flowRight3 {
     0% {
-        transform: translateX(-400vw);
+        transform: translateX(-200vw);
     }
     100% {
-        transform: translateX(400vw);
+        transform: translateX(200vw);
     }
 }
 
