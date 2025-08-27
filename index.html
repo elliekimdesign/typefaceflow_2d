@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typeface2D - Gesture-Controlled Font Selection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Status indicator -->
+    <div class="status-indicator" id="status">Initializing camera...</div>
+    
+    <div class="container">
+        <!-- Camera feed for hand tracking -->
+        <video id="video" autoplay muted playsinline style="display: none;"></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        
+        <!-- Font flow area -->
+        <div class="font-flow-container">
+            <div class="font-row" id="row1"></div>
+            <div class="font-row" id="row2"></div>
+            <div class="font-row" id="row3"></div>
+        </div>
+        
+        <!-- Sample text area -->
+        <div class="text-preview-container">
+            <div class="sample-text" id="sampleText">
+                This is a typeface preview
+            </div>
+            <div class="font-name-display" id="fontNameDisplay">Arial</div>
+        </div>
+        
+        <!-- Hand tracking visualization -->
+        <div class="hand-overlay" id="handOverlay"></div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
