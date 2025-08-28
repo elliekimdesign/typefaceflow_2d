@@ -144,7 +144,7 @@ class FontFlowDemo {
             this.updateStatus('Ready! Make a fist to pause, point to select fonts', 'active');
             
         } catch (error) {
-            console.error('Error starting camera:', error);
+            console.error('❌ Camera access failed:', error);
             this.updateStatus('Camera access denied or not available');
         }
     }
@@ -166,13 +166,20 @@ class FontFlowDemo {
     }
     
     onHandResults(results) {
+        console.log('👋 Hand detection results:', results.multiHandLandmarks ? results.multiHandLandmarks.length : 0);
+        
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const landmarks = results.multiHandLandmarks[0];
+            console.log('✅ Hand detected! Processing gestures...');
             this.processHandGestures(landmarks);
             this.updateStatus('Hand detected - Tracking gestures', 'tracking');
         } else {
-            // Only clear overlay when no hand is detected
-            this.clearHandOverlay();
+            // Only clear overlay when no hand is detected for a short time
+            setTimeout(() => {
+                if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+                    this.clearHandOverlay();
+                }
+            }, 100);
             this.updateStatus('Camera active - No hand detected', 'active');
         }
     }
@@ -213,55 +220,59 @@ class FontFlowDemo {
         // Always show hand position (both when paused and flowing)
         this.showHandPosition(screenX, screenY);
         
-        // Detect gestures with extremely lenient thresholds
-        const fingerThreshold = 0.08; // Much more lenient threshold
-        const isIndexUp = (indexTip.y + fingerThreshold) < indexPip.y;
-        const isMiddleUp = (middleTip.y + fingerThreshold) < middlePip.y;
-        const ringTip = landmarks[16];
+        // Get additional landmarks for finger detection
         const ringPip = landmarks[14];
-        const isRingUp = (ringTip.y + fingerThreshold) < ringPip.y;
-        const pinkyTip = landmarks[20];
         const pinkyPip = landmarks[18];
-        const isPinkyUp = (pinkyTip.y + fingerThreshold) < pinkyPip.y;
         
-        // Fist: all fingers must be clearly down (strict detection)
-        const strictThreshold = -0.02; // Stricter threshold for fist detection
-        const isIndexReallyDown = (indexTip.y + strictThreshold) > indexPip.y;
-        const isMiddleReallyDown = (middleTip.y + strictThreshold) > middlePip.y;
-        const isRingReallyDown = (ringTip.y + strictThreshold) > ringPip.y;
-        const isPinkyReallyDown = (pinkyTip.y + strictThreshold) > pinkyPip.y;
+        // Compare finger tips to their PIP joints (more reliable)
+        const isIndexUp = indexTip.y < indexPip.y;
+        const isMiddleUp = middleTip.y < middlePip.y;
+        const ringTip = landmarks[16];
+        const isRingUp = ringTip.y < ringPip.y;
+        const pinkyTip = landmarks[20];
+        const isPinkyUp = pinkyTip.y < pinkyPip.y;
         
-        const isFist = isIndexReallyDown && isMiddleReallyDown && isRingReallyDown && isPinkyReallyDown;
-        // Open hand: at least 2 fingers up
-        const isOpenHand = (isIndexUp && isMiddleUp) || (isIndexUp && isRingUp) || (isMiddleUp && isRingUp) || (isIndexUp && isPinkyUp);
+        // Fist: All fingers down
+        const isFist = !isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
+        // Open hand: more lenient - any 2+ fingers up OR 3+ fingers up
+        const fingersUp = [isIndexUp, isMiddleUp, isRingUp, isPinkyUp].filter(Boolean).length;
+        const isOpenHand = fingersUp >= 2;
         // Pointing: only index finger up
         const isPointing = isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
         
-        console.log('🖐️ Gesture detection:', { 
-            isFist: isFist ? '✊' : '❌', 
-            isOpenHand: isOpenHand ? '🖐️' : '❌',
-            isPointing: isPointing ? '👉' : '❌',
-            fingers: {
-                index: isIndexUp ? '☝️' : '👇',
-                middle: isMiddleUp ? '☝️' : '👇',
-                ring: isRingUp ? '☝️' : '👇',
-                pinky: isPinkyUp ? '☝️' : '👇'
+        console.log('🖐️ DETAILED GESTURE:', { 
+            '🎯 RESULT': {
+                isFist: isFist ? '✊ FIST DETECTED' : '❌ NOT FIST',
+                animationPaused: this.isAnimationPaused ? '⏸️ PAUSED' : '▶️ PLAYING'
             },
-            animationPaused: this.isAnimationPaused
+            '👆 FINGERS': {
+                index: isIndexUp ? '☝️ UP' : '👇 DOWN',
+                middle: isMiddleUp ? '☝️ UP' : '👇 DOWN', 
+                ring: isRingUp ? '☝️ UP' : '👇 DOWN',
+                pinky: isPinkyUp ? '☝️ UP' : '👇 DOWN',
+                total: `${fingersUp}/4 UP`
+            },
+            '🔍 FIST CHECK': {
+                indexDown: !isIndexUp ? '✅' : '❌',
+                middleDown: !isMiddleUp ? '✅' : '❌',
+                ringDown: !isRingUp ? '✅' : '❌',
+                pinkyDown: !isPinkyUp ? '✅' : '❌'
+            }
         });
         
-        // Animation control logic - simplified and more reliable
-        if (isFist) {
-            // Pause animation when fist is detected
+        // ANIMATION CONTROL - Fist OR pointing pauses, only open hand resumes
+        if (isFist || isPointing) {
+            // Pause animation when fist or pointing is detected
             if (!this.isAnimationPaused) {
                 this.pauseAnimation();
-                this.updateStatus('Fist detected - Animation paused', 'tracking');
+                const gestureType = isFist ? 'Fist' : 'Pointing';
+                this.updateStatus(`${gestureType} detected - Animation paused`, 'tracking');
             }
-        } else {
-            // Resume animation when hand is NOT a fist (any other gesture)
+        } else if (fingersUp >= 1 && !isPointing) {
+            // Resume animation when opening hand (any finger up except pointing)
             if (this.isAnimationPaused) {
                 this.resumeAnimation();
-                this.clearAllSelections(); // Clear any font selections/highlights
+                this.clearAllSelections(); // Only clear font selections, not cursor
                 this.updateStatus('Hand opened - Animation resumed', 'active');
             }
         }
@@ -272,11 +283,14 @@ class FontFlowDemo {
             if (fontAtPosition) {
                 this.highlightFont(fontAtPosition);
                 
-                // Auto-select after hovering for 1 second
+                // INSTANT PREVIEW - Apply font immediately when hovering
+                this.previewFont(fontAtPosition);
+                
+                // Auto-select after hovering for 0.3 seconds
                 if (this.highlightedFont === fontAtPosition) {
                     if (!this.hoverStartTime) {
                         this.hoverStartTime = Date.now();
-                        this.updateStatus(`Hovering over ${fontAtPosition} - Hold to select`, 'tracking');
+                        this.updateStatus(`Previewing ${fontAtPosition} - Hold to select`, 'tracking');
                     } else {
                         const elapsed = Date.now() - this.hoverStartTime;
                         if (elapsed > 300) {
@@ -361,6 +375,22 @@ class FontFlowDemo {
         });
         
         this.highlightedFont = fontName;
+    }
+    
+    previewFont(fontName) {
+        // Apply font immediately for preview (without permanent selection)
+        const sampleText = document.getElementById('sampleText');
+        const fontNameDisplay = document.getElementById('fontNameDisplay');
+        
+        if (sampleText) {
+            sampleText.style.fontFamily = `"${fontName}", sans-serif`;
+        }
+        
+        if (fontNameDisplay) {
+            fontNameDisplay.textContent = fontName;
+        }
+        
+        console.log('👀 Previewing font:', fontName);
     }
     
     selectFont(fontName) {

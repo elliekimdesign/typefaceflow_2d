@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background: #2172FF;
+    background: #1D70FF;
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -82,7 +82,7 @@ body {
     flex-direction: column;
     justify-content: space-evenly;
     padding: 15px 0;
-    background: #2172FF;
+    background: #1D70FF;
 }
 
 .font-row {
@@ -149,7 +149,7 @@ body {
 /* Text Preview Area */
 .text-preview-container {
     flex: 1;
-    background: #2172FF;
+    background: #1D70FF;
     padding: 30px;
     display: flex;
     flex-direction: column;
