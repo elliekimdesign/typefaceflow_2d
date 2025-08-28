@@ -166,13 +166,13 @@ class FontFlowDemo {
     }
     
     onHandResults(results) {
-        this.clearHandOverlay();
-        
         if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
             const landmarks = results.multiHandLandmarks[0];
             this.processHandGestures(landmarks);
             this.updateStatus('Hand detected - Tracking gestures', 'tracking');
         } else {
+            // Only clear overlay when no hand is detected
+            this.clearHandOverlay();
             this.updateStatus('Camera active - No hand detected', 'active');
         }
     }
@@ -186,30 +186,54 @@ class FontFlowDemo {
         const thumbTip = landmarks[4];   // Thumb tip
         const wrist = landmarks[0];      // Wrist
         
-        // Convert normalized coordinates to screen coordinates
-        const screenX = (1 - indexTip.x) * window.innerWidth; // Flip horizontally for mirror effect
-        const screenY = indexTip.y * window.innerHeight;
+        // Filter to only detect hands in front of screen (not holding camera)
+        // Calculate hand size based on wrist to middle finger distance
+        const handSize = Math.sqrt(
+            Math.pow(middleTip.x - wrist.x, 2) + 
+            Math.pow(middleTip.y - wrist.y, 2)
+        );
         
-        // Show hand position
+        // More lenient filtering - only exclude obvious camera-holding hands
+        const isNotAtEdge = indexTip.x >= 0.05 && indexTip.x <= 0.95 && 
+                           indexTip.y >= 0.05 && indexTip.y <= 0.95;
+        
+        // Only exclude extremely large hands (very close to camera)
+        const isNotTooClose = handSize <= 0.3;
+        
+        // Allow most hands through, only filter out obvious camera-holding cases
+        if (!isNotAtEdge || !isNotTooClose) {
+            return; // Skip processing this hand
+        }
+        
+        // Convert normalized coordinates to screen coordinates with better mapping
+        // Adjust the mapping to be more responsive and natural
+        const screenX = (1 - indexTip.x) * window.innerWidth; // Flip horizontally for mirror effect
+        const screenY = (indexTip.y - 0.1) * window.innerHeight * 1.2; // Shift up and scale for better range
+        
+        // Always show hand position (both when paused and flowing)
         this.showHandPosition(screenX, screenY);
         
-        // Detect gestures with simpler and more reliable logic
-        const isIndexUp = indexTip.y < indexPip.y;
-        const isMiddleUp = middleTip.y < middlePip.y;
+        // Detect gestures with more lenient thresholds
+        const fingerThreshold = 0.02; // More lenient threshold for finger detection
+        const isIndexUp = (indexTip.y + fingerThreshold) < indexPip.y;
+        const isMiddleUp = (middleTip.y + fingerThreshold) < middlePip.y;
         const ringTip = landmarks[16];
         const ringPip = landmarks[14];
-        const isRingUp = ringTip.y < ringPip.y;
+        const isRingUp = (ringTip.y + fingerThreshold) < ringPip.y;
         const pinkyTip = landmarks[20];
         const pinkyPip = landmarks[18];
-        const isPinkyUp = pinkyTip.y < pinkyPip.y;
+        const isPinkyUp = (pinkyTip.y + fingerThreshold) < pinkyPip.y;
         
-        // Fist: all fingers down
+        // Fist: all fingers down (more lenient - allow slight movement)
         const isFist = !isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
+        // Open hand: at least 2 fingers up
+        const isOpenHand = (isIndexUp && isMiddleUp) || (isIndexUp && isRingUp) || (isMiddleUp && isRingUp) || (isIndexUp && isPinkyUp);
         // Pointing: only index finger up
         const isPointing = isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
         
         console.log('Gesture detection:', { 
             isFist, 
+            isOpenHand,
             isPointing, 
             isIndexUp, 
             isMiddleUp, 
@@ -217,15 +241,18 @@ class FontFlowDemo {
             isPinkyUp 
         });
         
-        // Stop gesture (closed fist)
+        // Animation control logic - simplified and more reliable
         if (isFist) {
+            // Pause animation when fist is detected
             if (!this.isAnimationPaused) {
                 this.pauseAnimation();
                 this.updateStatus('Fist detected - Animation paused', 'tracking');
             }
         } else {
-            if (this.isAnimationPaused && !isPointing) {
+            // Resume animation when hand is NOT a fist (any other gesture)
+            if (this.isAnimationPaused) {
                 this.resumeAnimation();
+                this.clearAllSelections(); // Clear any font selections/highlights
                 this.updateStatus('Hand opened - Animation resumed', 'active');
             }
         }
@@ -280,13 +307,31 @@ class FontFlowDemo {
             overlay.appendChild(handPoint);
         }
         
-        handPoint.style.left = `${x}px`;
-        handPoint.style.top = `${y}px`;
+        // Clamp coordinates to screen bounds for better visibility
+        const clampedX = Math.max(0, Math.min(x, window.innerWidth - 40));
+        const clampedY = Math.max(0, Math.min(y, window.innerHeight - 40));
+        
+        handPoint.style.left = `${clampedX}px`;
+        handPoint.style.top = `${clampedY}px`;
     }
     
     clearHandOverlay() {
         const overlay = document.getElementById('handOverlay');
         overlay.innerHTML = '';
+    }
+    
+    clearAllSelections() {
+        // Clear all highlighted and selected states
+        document.querySelectorAll('.font-item.highlighted').forEach(item => {
+            item.classList.remove('highlighted');
+        });
+        document.querySelectorAll('.font-item.selected').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Reset selection tracking variables
+        this.highlightedFont = null;
+        this.hoverStartTime = null;
     }
     
     getFontAtPosition(x, y) {
