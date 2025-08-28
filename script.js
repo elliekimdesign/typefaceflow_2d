@@ -213,8 +213,8 @@ class FontFlowDemo {
         // Always show hand position (both when paused and flowing)
         this.showHandPosition(screenX, screenY);
         
-        // Detect gestures with more lenient thresholds
-        const fingerThreshold = 0.02; // More lenient threshold for finger detection
+        // Detect gestures with extremely lenient thresholds
+        const fingerThreshold = 0.08; // Much more lenient threshold
         const isIndexUp = (indexTip.y + fingerThreshold) < indexPip.y;
         const isMiddleUp = (middleTip.y + fingerThreshold) < middlePip.y;
         const ringTip = landmarks[16];
@@ -224,21 +224,30 @@ class FontFlowDemo {
         const pinkyPip = landmarks[18];
         const isPinkyUp = (pinkyTip.y + fingerThreshold) < pinkyPip.y;
         
-        // Fist: all fingers down (more lenient - allow slight movement)
-        const isFist = !isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
+        // Fist: all fingers must be clearly down (strict detection)
+        const strictThreshold = -0.02; // Stricter threshold for fist detection
+        const isIndexReallyDown = (indexTip.y + strictThreshold) > indexPip.y;
+        const isMiddleReallyDown = (middleTip.y + strictThreshold) > middlePip.y;
+        const isRingReallyDown = (ringTip.y + strictThreshold) > ringPip.y;
+        const isPinkyReallyDown = (pinkyTip.y + strictThreshold) > pinkyPip.y;
+        
+        const isFist = isIndexReallyDown && isMiddleReallyDown && isRingReallyDown && isPinkyReallyDown;
         // Open hand: at least 2 fingers up
         const isOpenHand = (isIndexUp && isMiddleUp) || (isIndexUp && isRingUp) || (isMiddleUp && isRingUp) || (isIndexUp && isPinkyUp);
         // Pointing: only index finger up
         const isPointing = isIndexUp && !isMiddleUp && !isRingUp && !isPinkyUp;
         
-        console.log('Gesture detection:', { 
-            isFist, 
-            isOpenHand,
-            isPointing, 
-            isIndexUp, 
-            isMiddleUp, 
-            isRingUp, 
-            isPinkyUp 
+        console.log('🖐️ Gesture detection:', { 
+            isFist: isFist ? '✊' : '❌', 
+            isOpenHand: isOpenHand ? '🖐️' : '❌',
+            isPointing: isPointing ? '👉' : '❌',
+            fingers: {
+                index: isIndexUp ? '☝️' : '👇',
+                middle: isMiddleUp ? '☝️' : '👇',
+                ring: isRingUp ? '☝️' : '👇',
+                pinky: isPinkyUp ? '☝️' : '👇'
+            },
+            animationPaused: this.isAnimationPaused
         });
         
         // Animation control logic - simplified and more reliable
